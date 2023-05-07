@@ -1,0 +1,26 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div>
+    <div class="form-group">
+      <label for="account">帳號: </label>
+      <input type="text" class="form-control" id="account" formControlName="account">
+      <span class="warning-message" *ngIf="form.get('account').invalid &&form.get('account').touched">
+         <span *ngIf="form.get('account').errors['required']">帳號不得留空</span>
+         <span *ngIf="form.get('account').errors['pattern']">請輸入2-20英數字帳號</span>
+      </span>
+    </div>
+
+    <div class="form-group">
+      <label for="password">密碼: </label>
+      <input type="text" class="form-control" id="password" formControlName="password">
+      <span class="warning-message" *ngIf="form.get('password').invalid &&form.get('password').touched">
+         <span *ngIf="form.get('password').errors['required']">密碼不得留空</span>
+         <span *ngIf="form.get('password').errors['pattern']">密碼長度8~12位數、必須同時包含大小寫英文、數字、符號，且相同字元不得重複超過 3 次</span>
+      </span>
+    </div>
+    <button type="submit" class="btn btn-primary" [disabled]="!form.valid">登入</button>
+    <div *ngIf="loginFail" class="warning-message">帳號或密碼錯誤</div>
+    <br>
+    <a [routerLink]="['/forgetPassword']">忘記密碼</a>
+    <a [routerLink]="['/register']">會員註冊</a>
+  </div>
+</form>
