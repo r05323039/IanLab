@@ -4,15 +4,14 @@ import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  templateUrl: './app.component.html'
 })
 export class AppComponent implements OnInit {
 
   status: boolean
 
   constructor(private userService: UserService,
-              private router:Router) {
+              private router: Router) {
   }
 
   ngOnInit(): void {
@@ -22,7 +21,7 @@ export class AppComponent implements OnInit {
     })
   }
 
-  logout(){
+  logout() {
     this.userService.logout();
     this.router.navigate(['login'])
   }

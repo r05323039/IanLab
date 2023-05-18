@@ -1,0 +1,10 @@
+<form [formGroup]="form" (ngSubmit)="onSubmitFormAccount()">
+  <label for="account">帳號:</label>
+  <input type="text" id="account" formControlName="account" placeholder="請輸入帳號">
+  <span class="warning-message" *ngIf="showErrorMsg(form.get('account'),'pattern')">
+    請輸入2-20英數字帳號</span>
+  <br>
+  <button type="submit" class="btn btn-primary" [disabled]="!form.valid">確認</button>
+  <div class="warning-message" *ngIf="accountErrMsg">請檢查帳號是否輸入錯誤</div>
+</form>
+

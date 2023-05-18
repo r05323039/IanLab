@@ -6,23 +6,34 @@ import {LoginComponent} from './login/login.component';
 import {RegisterComponent} from './register/register.component';
 import {ForgetPasswordComponent} from './forget-password/forget-password.component';
 import {NgModule} from '@angular/core';
+import {VerifyOtpComponent} from "./forget-password/verify-otp/verify-otp.component";
+import {ResetPasswordComponent} from "./forget-password/reset-password/reset-password.component";
+import {GetAccountComponent} from "./forget-password/get-account/get-account.component";
+import {UpdateComponent} from "./user-center/update/update.component";
+import {AuthGuard} from "./user-center/auth.guard";
 
 
 const userRoutes: Routes = [
-  {path: 'login', component: LoginComponent, data: {'action': 1}},
-  {path: 'register', component: RegisterComponent, data: {'action': 2}},
-  {path: 'forgetPassword', component: ForgetPasswordComponent, data: {'action': 3}},
-
+  {path: 'login', component: LoginComponent},
+  {path: 'register', component: RegisterComponent},
+  {
+    path: 'forgetPassword', component: ForgetPasswordComponent
+    , children: [
+      {path: '', component: GetAccountComponent},
+      {path: 'verify', component: VerifyOtpComponent},
+      {path: 'resetPassword', component: ResetPasswordComponent}
+    ]
+  },
   {
     path: 'center',
     component: UserCenterComponent,
+    canActivate: [AuthGuard],
     children: [
-      {path: '', component: UserDataComponent},
       {path: 'data', component: UserDataComponent},
       {path: 'message', component: UserMessageComponent},
+      {path: 'update', component: UpdateComponent}
     ],
   },
-
   {path: '**', redirectTo: '/'}
 ];
 

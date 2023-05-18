@@ -1,0 +1,16 @@
+
+:host {
+  padding: 2rem;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  background: white;
+  transform: translate(-50%, -50%);
+  border: 2px solid black;
+}
+.button-container {
+  display: flex;
+  justify-content: flex-end;
+}

@@ -1,7 +1,9 @@
 import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {UserService} from "../user-service";
-import {ActivatedRoute, Router} from "@angular/router";
+import {ActivatedRoute, NavigationExtras, Router} from "@angular/router";
+import {showErrorMsg, UserValidators} from "../UserValidators";
+import {UserHttpService} from "../user-http-service";
 
 @Component({
   selector: 'app-login',
@@ -9,12 +11,17 @@ import {ActivatedRoute, Router} from "@angular/router";
   styleUrls: ['./login.component.css'],
 })
 export class LoginComponent implements OnInit {
+
+  protected readonly showErrorMsg = showErrorMsg;
   form: FormGroup
-  loginFail: boolean = false;
+  loginFailMsg: string;
+  registerMsg: boolean;
+
 
   constructor(private userService: UserService,
               private activatedRoute: ActivatedRoute,
-              private router: Router) {
+              private router: Router,
+              private userHttpService: UserHttpService) {
   }
 
   ngOnInit(): void {
@@ -22,23 +29,43 @@ export class LoginComponent implements OnInit {
     if (this.userService.loginStatus) {
       this.router.navigate(['center'])
     }
+    //是否由註冊成功跳轉
+    this.activatedRoute.queryParams.subscribe(params => {
+      const success = params['success'];
+      if (success === 'true') {
+        this.registerMsg = true;
+      }
+    })
 
     //形成form
     this.form = new FormGroup({
       'account': new FormControl(null,
-        [Validators.required, Validators.pattern(/^[a-zA-Z0-9]{2,20}$/)]),
+        [Validators.required, UserValidators.account]),
       'password': new FormControl(null,
-        [Validators.required, Validators.pattern(/^(?!\S*?(.)\1{3})(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\w\s]).{8,12}$/)])
+        [Validators.required, UserValidators.password])
     })
   }
 
+
   onSubmit() {
-    const backendData = this.userService.getData()
-    if (backendData.account === this.form.value.account && backendData.password === this.form.value.password) {
-      this.userService.login()
-      this.router.navigate(['center'])//之後routes加上userId
-    } else {
-      this.loginFail = true
-    }
+    this.userHttpService.login(this.form.value.account, this.form.value.password)
+      .subscribe(response => {
+          if (response.body.message === "000") {
+            //token
+            const token = response.headers.get('x-token')
+            console.log('login-token:\n' + token)
+            this.userHttpService.token = token;
+            //user
+            this.userService.user = response.body.resEntity
+            // console.log(this.userService.user)
+            //更改狀態
+            this.userService.login()
+            //導頁
+            this.router.navigate(['center'])
+          } else {
+            this.loginFailMsg = '帳號或密碼錯誤'
+          }
+        }
+      )
   }
 }

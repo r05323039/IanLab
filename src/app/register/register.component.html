@@ -1,1 +1,82 @@
-<p>register works!</p>
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div>
+    <div class="form-group">
+      <label for="account">帳號: </label>
+      <input type="text" class="form-control" id="account" formControlName="account" placeholder="請輸入帳號">
+      <span class="warning-message" *ngIf="showErrorMsg(form.get('account'),'pattern')">請輸入2-20英數字帳號</span>
+    </div>
+
+    <div class="form-group">
+      <label for="username">姓名: </label>
+      <input type="text" class="form-control" id="username" formControlName="username" placeholder="請輸入姓名">
+      <span class="warning-message"
+            *ngIf="showErrorMsg(form.get('username'), 'pattern')">請輸入1-20的中文或英文或數字</span>
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email:
+        <span *ngIf="emailLock" style="color:green">已認證</span></label>
+      <input type="text" class="form-control" id="email" formControlName="email" placeholder="請輸入email"
+             [readOnly]="emailLock"
+             *ngIf="this.opt === null">
+
+      <input type="text" class="form-control" placeholder="請輸入驗證碼"
+             [(ngModel)]="optInput" (ngModelChange)="verifyOtp()" [ngModelOptions]="{standalone:true}"
+             *ngIf="this.opt !== null">
+
+      <button type="button" class="btn btn-success" (click)="checkEmail()"
+              *ngIf="emailBtn !==null">{{emailBtn}}</button>
+      <span class="warning-message" *ngIf="errMsg !== null">{{errMsg}}</span>
+    </div>
+
+    <div class="form-group">
+      <label for="password">密碼: </label>
+      <input type="text" class="form-control" id="password" formControlName="password" placeholder="請輸入密碼">
+      <span class="warning-message" *ngIf="showErrorMsg(form.get('password'), 'pattern')">密碼長度8~12位數、必須同時包含大小寫英文、數字、符號，且相同字元不得重複超過 3 次</span>
+    </div>
+
+    <div class="form-group">
+      <label for="password2">再次輸入密碼: </label>
+      <input type="text" class="form-control" id="password2" formControlName="password2" placeholder="請輸入密碼">
+      <span class="warning-message" *ngIf="showErrorMsg(form.get('password2'),'confirmPassword')">兩次密碼須一致</span>
+    </div>
+
+    <div class="form-group">
+      <label for="birthday">生日: </label>
+      <input type="date" class="form-control" id="birthday" formControlName="birthday">
+      <span class="warning-message" *ngIf="showErrorMsg(form.get('birthday'),'pattern')">出生日不可大於今日</span>
+    </div>
+
+
+    <div class="form-group" formGroupName="address">
+      <label>地址: </label><br>
+
+      <select class="form-control address" formControlName="city" (change)="onCityChange()">
+        <option *ngFor="let city of addressData;
+                let i = index" [value]=i>{{city.CityName}}</option>
+      </select>
+
+      <select class="form-control address" formControlName="area" *ngIf="cityIndex" (change)="onAreaChange()">
+        <option *ngFor="let area of addressData[cityIndex].AreaList;
+                let j = index" [value]=j>{{area.AreaName}}</option>
+      </select>
+
+      <input type="text" class="form-control detail" formControlName="detail" placeholder="請輸入地址"
+             *ngIf="areaIndex !== undefined">
+<!--      <span class="warning-message" *ngIf="showErrorMsg(form.get('address.detail'),'required')">請輸入地址</span>-->
+    </div>
+
+    <div class="form-group">
+      <label for="image">照片</label>
+      <input type="file" id="image" (change)="onFileChange($event)">
+      <img [src]="preview" alt="Image"
+           *ngIf="preview !== null"/>
+    </div>
+
+    <button type="submit" class="btn btn-primary" [disabled]="!emailLock || !form.valid">確認</button>
+    <button type="button" class="btn btn-primary" [routerLink]="['/login']">取消</button>
+    <span class="warning-message" *ngIf="responseErr !== null">{{responseErr}}</span>
+  </div>
+</form>
+
+

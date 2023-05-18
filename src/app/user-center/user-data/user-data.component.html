@@ -1,1 +1,11 @@
-<p>user-data works!</p>
+<h2>會員資料</h2>
+<div class="col-md-12">帳號: {{this.user.account}}</div>
+<div class="col-md-12">Email: {{this.user.email}}</div>
+<div class="col-md-12">姓名: {{this.user.userName}}</div>
+<div class="col-md-12">生日: {{this.user.birthday}}</div>
+<div class="col-md-12" *ngIf="this.user.address !== ''">地址: {{this.user.address}}</div>
+<div class="col-md-12" *ngIf="this.user.image !== null">照片:
+  <img [src]="preview" alt="Image"/>
+</div>
+
+<button type="button" (click)="onUpdate()" class="btn btn-success">修改</button>

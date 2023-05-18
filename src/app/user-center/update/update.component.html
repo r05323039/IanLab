@@ -1,0 +1,57 @@
+<h2>會員資料修改</h2>
+<div class="col-md-12">帳號: {{this.user.account}}</div>
+<div class="col-md-12">Email: {{this.user.email}}</div>
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div>
+    <div class="form-group">
+      <label for="username">姓名: </label>
+      <input type="text" class="form-control" id="username" formControlName="username" placeholder="請輸入姓名">
+      <span class="warning-message"
+            *ngIf="showErrorMsg(form.get('username'), 'pattern')">請輸入1-20的中文或英文或數字</span>
+    </div>
+
+    <div class="form-group">
+      <label for="birthday">生日:
+      </label>
+      <input type="date" class="form-control" id="birthday" formControlName="birthday">
+      <span class="warning-message"
+            *ngIf="showErrorMsg(form.get('birthday'),'pattern')">出生日不可大於今日</span>
+    </div>
+
+    <div class="form-group" formGroupName="address">
+      <label>地址: </label><br>
+      <span class="warning-message"
+            *ngIf="form.get('address.city').value !==null &&
+            (form.get('address.detail').value === null ||form.get('address.detail').value === '')">
+        住址填寫完整才會更新
+      </span>
+      <br>
+      <select class="form-control address" formControlName="city" (change)="onCityChange()">
+        <option *ngFor="let city of addressData;
+                let i = index" [value]=i>{{city.CityName}}</option>
+      </select>
+
+      <select class="form-control address" formControlName="area" *ngIf="cityIndex" (change)="onAreaChange()">
+        <option *ngFor="let area of addressData[cityIndex].AreaList;
+                let j = index" [value]=j>{{area.AreaName}}</option>
+      </select>
+
+      <input type="text" class="form-control detail" formControlName="detail" placeholder="請輸入地址"
+             *ngIf="areaIndex !== undefined">
+    </div>
+
+    <div class="form-group">
+      <label for="image">照片</label>
+      <input type="file" id="image" (change)="onFileChange($event)">
+      <img [src]="preview" alt="Image"
+           *ngIf="preview !== null"/>
+    </div>
+
+    <br>
+    <button type="submit" class="btn btn-primary" [disabled]="!form.valid
+              ||form.get('address.city').value !==null &&
+            (form.get('address.detail').value === null ||form.get('address.detail').value === '')">確認
+    </button>
+    <button type="button" class="btn btn-primary" [routerLink]="['../']">取消</button>
+  </div>
+</form>

@@ -1,0 +1,10 @@
+<label for="otp">檢核碼:</label>
+<input type="text" id="otp" required placeholder="請輸入檢核碼" #ref_otp="ngModel" ngModel>
+<div>
+  <a *ngIf="!sendableOTP">沒收到驗證碼嗎?{{second}}秒後可重發</a>
+  <a *ngIf="sendableOTP" style="cursor: pointer" (click)="otpResendCounter();requestOTP()">沒收到驗證碼嗎?</a>
+</div>
+<div class="warning-message" *ngIf="otpErrMsg">檢核碼錯誤</div>
+<button type="button" class="btn btn-primary" (click)="verifyOtp(ref_otp)">確認
+
+</button>

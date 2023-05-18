@@ -11,6 +11,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
+    "resolveJsonModule": true,//手動加上這兩行就能import .json
+    "allowSyntheticDefaultImports": true,//
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
