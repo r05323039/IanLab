@@ -1,5 +1,4 @@
 import {Component, OnInit,} from '@angular/core';
-import {UserService} from "../user-service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {showErrorMsg, UserValidators} from "../UserValidators";
@@ -30,8 +29,7 @@ export class RegisterComponent implements OnInit {
   //
   responseErr: string = null
 
-  constructor(private userService: UserService,
-              private activatedRoute: ActivatedRoute,
+  constructor(private activatedRoute: ActivatedRoute,
               private router: Router,
               private userHttpService: UserHttpService
   ) {

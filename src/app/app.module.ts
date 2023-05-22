@@ -10,18 +10,16 @@ import {ForgetPasswordComponent} from './forget-password/forget-password.compone
 import {RegisterComponent} from './register/register.component';
 import {UserRoutes} from './user-routes';
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
-import {UserService} from "./user-service";
 import {UserHttpService} from "./user-http-service";
 import {HTTP_INTERCEPTORS, HttpClientModule} from "@angular/common/http";
-import {ApiTestComponent} from './api-test/api-test.component';
 import {AuthInterceptorService} from "./auth-interceptor.service";
-import { VerifyOtpComponent } from './forget-password/verify-otp/verify-otp.component';
-import { ResetPasswordComponent } from './forget-password/reset-password/reset-password.component';
-import { GetAccountComponent } from './forget-password/get-account/get-account.component';
-import { UpdateComponent } from './user-center/update/update.component';
+import {VerifyOtpComponent} from './forget-password/verify-otp/verify-otp.component';
+import {ResetPasswordComponent} from './forget-password/reset-password/reset-password.component';
+import {GetAccountComponent} from './forget-password/get-account/get-account.component';
+import {UpdateComponent} from './user-center/update/update.component';
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
-import { MessageDialogComponent } from './user-center/user-message/message-dialog/message-dialog.component';
+import {MessageDialogComponent} from './user-center/user-message/message-dialog/message-dialog.component';
 import {MatDialogModule} from "@angular/material/dialog";
 
 @NgModule({
@@ -34,18 +32,15 @@ import {MatDialogModule} from "@angular/material/dialog";
     LoginComponent,
     ForgetPasswordComponent,
     RegisterComponent,
-    ApiTestComponent,
     VerifyOtpComponent,
     ResetPasswordComponent,
     GetAccountComponent,
     UpdateComponent,
     MessageDialogComponent
-
-
   ],
   imports: [BrowserModule, UserRoutes, ReactiveFormsModule, FormsModule, HttpClientModule, MatCheckboxModule,
     MatButtonModule, MatDialogModule,],
-  providers: [UserService, UserHttpService,
+  providers: [UserHttpService,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptorService,

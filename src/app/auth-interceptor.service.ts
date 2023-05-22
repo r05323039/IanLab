@@ -1,7 +1,6 @@
 import {HttpEvent, HttpHandler, HttpHeaders, HttpInterceptor, HttpRequest} from "@angular/common/http";
 import {Observable, tap} from "rxjs";
 import {ResponseModel} from "./pojo/response.model";
-import {UserService} from "./user-service";
 import {Injectable} from "@angular/core";
 import {UserHttpService} from "./user-http-service";
 
@@ -9,8 +8,7 @@ import {UserHttpService} from "./user-http-service";
 export class AuthInterceptorService implements HttpInterceptor {
 
 //配置 模擬URL 4200 ->8084 proxy.conf.js
-  constructor(private userService: UserService,
-              private userHttpService:UserHttpService) {
+  constructor(private userHttpService:UserHttpService) {
 
   }
 
@@ -20,6 +18,7 @@ export class AuthInterceptorService implements HttpInterceptor {
       ['/find', '/find/msg', '/delete', '/resetpassword', '/update', '/image']
 
     if (addTokenUrls.some(theUrl => req.url.includes(theUrl))){
+      // console.log('intercept work')
       const modifiedReq = req.clone(
         {setHeaders:{'x-token':this.userHttpService.token}}
       )

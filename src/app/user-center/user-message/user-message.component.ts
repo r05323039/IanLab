@@ -1,10 +1,9 @@
 import {Component, OnInit} from '@angular/core';
-import {UserService} from "../../user-service";
-import {ActivatedRoute, Router} from "@angular/router";
 import {UserHttpService} from "../../user-http-service";
 import {MessageModel} from "../../pojo/message.model";
-import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
-import {MessageDialogComponent} from "./message-dialog/message-dialog.component";
+import {UserModel} from "../../pojo/user.model";
+import {exhaustMap, take} from "rxjs";
+
 
 @Component({
   selector: 'app-user-message',
@@ -12,18 +11,27 @@ import {MessageDialogComponent} from "./message-dialog/message-dialog.component"
   styleUrls: ['./user-message.component.css'],
 })
 export class UserMessageComponent implements OnInit {
+  //獲得當前user物件，拿account找MSG
+  user: UserModel
   messages: MessageModel[]
   //複選框
-  selectStatus: boolean = false;
+  checkboxChecked: boolean = false;
   //分頁
   currentPage: number = 1;
   itemsPerPage: number = 10;
   pageNumbers: number[] = [];
-  //彈窗
+  //彈窗，傳進@input
   inputMsg: MessageModel | null = null
 
-  constructor(private userService: UserService,
-              private userHttpService: UserHttpService,) {
+
+  constructor(private userHttpService: UserHttpService,) {
+  }
+
+  ngOnInit(): void {
+    this.userHttpService.userSubject.subscribe(user => {
+      this.user = user
+    })
+    this.initializeComponent()
   }
 
   //初始化組件
@@ -31,8 +39,8 @@ export class UserMessageComponent implements OnInit {
     this.messages = [];
     this.currentPage = 1;
     this.pageNumbers = [];
-    //取得會員訊息
-    this.userHttpService.findMsg(this.userService.user.account)
+
+    this.userHttpService.findMsg(this.user.account)
       .subscribe(response => {
         //存放到本組件
         this.messages = response.resEntity;
@@ -42,10 +50,6 @@ export class UserMessageComponent implements OnInit {
           this.pageNumbers.push(i);
         }
       });
-  }
-
-  ngOnInit(): void {
-    this.initializeComponent()
   }
 
   //取得目前分頁第一筆資料index
@@ -73,17 +77,19 @@ export class UserMessageComponent implements OnInit {
 
   //複選框全選
   selectAll() {
-    this.selectStatus = !this.selectStatus
+    this.checkboxChecked = !this.checkboxChecked
     this.messages.forEach((msg) => {
-      msg.checked = this.selectStatus
+      msg.checked = this.checkboxChecked
     })
   }
 
   //刪除訊息
   onDelete() {
     //獲得選取的數組
-    const ids = this.messages.filter(msg => msg.checked)
-      .map(msg => msg.msgId)
+    const ids =
+      this.messages
+        .filter(msg => msg.checked)
+        .map(msg => msg.msgId)
 
     //沒勾選複選框
     if (ids.length < 1) {
@@ -125,6 +131,13 @@ export class UserMessageComponent implements OnInit {
           //關閉彈窗
           this.inputMsg = null;
         }
+      })
+  }
+
+  getTestData(){
+    this.userHttpService.genMse(this.user.account)
+      .subscribe(()=>{
+        this.initializeComponent()
       })
   }
 }

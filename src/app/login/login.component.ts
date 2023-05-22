@@ -1,9 +1,10 @@
 import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from "@angular/forms";
-import {UserService} from "../user-service";
-import {ActivatedRoute, NavigationExtras, Router} from "@angular/router";
+
+import {ActivatedRoute, Router} from "@angular/router";
 import {showErrorMsg, UserValidators} from "../UserValidators";
 import {UserHttpService} from "../user-http-service";
+import {map, take, tap} from "rxjs";
 
 @Component({
   selector: 'app-login',
@@ -18,17 +19,21 @@ export class LoginComponent implements OnInit {
   registerMsg: boolean;
 
 
-  constructor(private userService: UserService,
-              private activatedRoute: ActivatedRoute,
+  constructor(private activatedRoute: ActivatedRoute,
               private router: Router,
               private userHttpService: UserHttpService) {
   }
 
   ngOnInit(): void {
     //登入狀態直接導到center組件
-    if (this.userService.loginStatus) {
-      this.router.navigate(['center'])
-    }
+    this.userHttpService.userSubject.pipe(
+      take(1),
+      map(user => (user !== null)),
+      tap(loginMode => {
+        if (loginMode)
+          this.router.navigate(['center'])
+      })
+    ).subscribe()
     //是否由註冊成功跳轉
     this.activatedRoute.queryParams.subscribe(params => {
       const success = params['success'];
@@ -48,18 +53,9 @@ export class LoginComponent implements OnInit {
 
 
   onSubmit() {
-    this.userHttpService.login(this.form.value.account, this.form.value.password)
+    this.userHttpService.httpLogin(this.form.value.account, this.form.value.password)
       .subscribe(response => {
-          if (response.body.message === "000") {
-            //token
-            const token = response.headers.get('x-token')
-            console.log('login-token:\n' + token)
-            this.userHttpService.token = token;
-            //user
-            this.userService.user = response.body.resEntity
-            // console.log(this.userService.user)
-            //更改狀態
-            this.userService.login()
+          if (response.message === "000") {
             //導頁
             this.router.navigate(['center'])
           } else {

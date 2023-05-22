@@ -20,7 +20,4 @@ export class MessageDialogComponent {
     this.deleteClicked.emit();
   }
 
-  // constructor(@Inject(MAT_DIALOG_DATA) public data: MessageModel) {
-  //   this.msg = data; // 将传递的数据赋值给 msg 属性
-  // }
 }

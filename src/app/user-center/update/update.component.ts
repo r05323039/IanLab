@@ -1,12 +1,11 @@
 import {Component, OnInit} from '@angular/core';
-import {UserService} from "../../user-service";
 import {UserHttpService} from "../../user-http-service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {UserModel, UserModelBuilder} from "../../pojo/user.model";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {showErrorMsg, UserValidators} from "../../UserValidators";
 import addressData from "../../../assets/CityCountyData.json";
-import {concatMap, mergeMap} from "rxjs";
+
 
 @Component({
   selector: 'app-update',
@@ -23,17 +22,16 @@ export class UpdateComponent implements OnInit {
   //image
   preview = null
 
-  constructor(private userService: UserService,
-              private userHttpService: UserHttpService,
+  constructor(private userHttpService: UserHttpService,
               private activatedRoute: ActivatedRoute,
               private router: Router) {
   }
 
   ngOnInit(): void {
-    if (this.userService.user !== null) {
-      //載入user資料
-      this.user = this.userService.user;
-    }
+    //載入user資料
+    this.userHttpService.userSubject.subscribe(user => {
+      this.user = user
+    })
     this.form = new FormGroup({
       'account': new FormControl(this.user.account),
       'username': new FormControl(null, [Validators.pattern(/^[\u4e00-\u9fa5a-zA-Z0-9]{1,20}$/)]),
@@ -51,7 +49,8 @@ export class UpdateComponent implements OnInit {
   onCityChange() {
     this.cityIndex = this.form.get('address.city').value
     // console.log(addressData[this.cityIndex].CityName)
-      }
+  }
+
   onAreaChange() {
     this.areaIndex = this.form.get('address.area').value
     this.zipCode = addressData[this.cityIndex].AreaList[this.areaIndex].ZipCode
@@ -60,16 +59,16 @@ export class UpdateComponent implements OnInit {
 
   //image
   onFileChange($event) {
-    const fileInput = event.target as HTMLInputElement;
-    const file = fileInput.files?.[0];
+    const fileInput = event.target as HTMLInputElement;//告訴編譯器物件，取得files屬性
+    const file = fileInput.files?.[0];//[0]代表第一個檔案
 
     const reader = new FileReader();
     reader.readAsDataURL(file)
     reader.onload = () => {
       const imageControl = this.form.get('image');
       if (imageControl) {
-        this.preview = reader.result
-        imageControl.setValue(file)
+        this.preview = reader.result//寫成base64才能做預覽圖
+        imageControl.setValue(file)//pass value用原始的file
       }
     }
   }
@@ -94,12 +93,14 @@ export class UpdateComponent implements OnInit {
       .setImage(value.image)//圖片可為null，直接丟即可
       .build()
     //call API update
-    this.userHttpService.update(user).subscribe(response => {
-      if (response.message = '000') {
-        //更新user資料到前端
-        this.userHttpService.find(user.account)
+    this.userHttpService.update(user).subscribe(
+      response => {
+        if (response.message = '000') {
+          this.router.navigate(['center/data'])
+        } else {
+        }
       }
-    })
+    )
   }
 
   protected readonly showErrorMsg = showErrorMsg;

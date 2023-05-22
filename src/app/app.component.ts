@@ -1,28 +1,26 @@
 import {Component, OnInit} from '@angular/core';
-import {UserService} from "./user-service";
 import {Router} from "@angular/router";
+import {UserHttpService} from "./user-http-service";
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html'
 })
 export class AppComponent implements OnInit {
+  loginMode:boolean = false
 
-  status: boolean
-
-  constructor(private userService: UserService,
+  constructor(private userHttpService:UserHttpService,
               private router: Router) {
   }
 
   ngOnInit(): void {
-    this.userService.loginSubject.subscribe((status) => {
-      this.status = status
-      //動態更新只會在subscribe內
-    })
+      this.userHttpService.userSubject.subscribe(user=>{
+       this.loginMode = !!user
+      })
   }
 
   logout() {
-    this.userService.logout();
+    this.userHttpService.userSubject.next(null);
     this.router.navigate(['login'])
   }
 }

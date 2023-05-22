@@ -1,11 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {showErrorMsg, UserValidators} from "../../UserValidators";
 import {FormControl, FormGroup} from "@angular/forms";
-import {UserService} from "../../user-service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {UserHttpService} from "../../user-http-service";
-import {relative} from "@angular/compiler-cli";
-import {forkJoin} from "rxjs";
 
 @Component({
   selector: 'app-get-account',
@@ -15,8 +12,7 @@ export class GetAccountComponent implements OnInit {
   form: FormGroup
   accountErrMsg: boolean
 
-  constructor(private userService: UserService,
-              private userHttpService: UserHttpService,
+  constructor(private userHttpService: UserHttpService,
               private activatedRoute: ActivatedRoute,
               private router: Router) {
   }
@@ -35,18 +31,13 @@ export class GetAccountComponent implements OnInit {
       .subscribe(response => {
         if (response.httpStatusCode === '200' && response.message === '000') {
           //發送OTP請求
-          this.userHttpService.genOTP(account).subscribe(response => {
-            this.userHttpService.getOTP(account)
-              .subscribe(response => {
-                  console.log(response.resEntity)//打印otp 可改為email發送
-                  this.router.navigate(['verify'],
-                    {
-                      relativeTo: this.activatedRoute,
-                      queryParams: {'account': account}
-                    })
-                }
-              )
-          })
+          this.userHttpService.requestOTP(account)
+            .subscribe(response=>{
+              console.log(response.resEntity)//打印OTP，可改mail或手機
+              this.router.navigate(['verify'],
+                {relativeTo:this.activatedRoute,
+                queryParams:{'account':account}})
+            })
         } else {
           this.accountErrMsg = true
         }

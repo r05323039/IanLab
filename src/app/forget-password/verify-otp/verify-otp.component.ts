@@ -1,5 +1,4 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {UserService} from "../../user-service";
 import {UserHttpService} from "../../user-http-service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, Subscription} from "rxjs";
@@ -15,8 +14,7 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
   otpErrMsg: boolean
   account: string
 
-  constructor(private userService: UserService,
-              private userHttpService: UserHttpService,
+  constructor(private userHttpService: UserHttpService,
               private activatedRoute: ActivatedRoute,
               private router: Router) {
   }
@@ -27,13 +25,10 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
   }
 
   requestOTP() {
-    this.userHttpService.genOTP(this.account)//pipe串
+    this.userHttpService.requestOTP(this.account)//pipe串
       .subscribe(response => {
-        this.userHttpService.getOTP(this.account)
-          .subscribe(response => {
-            console.log(response.resEntity)
-          })
-    })
+        console.log(response.resEntity)
+      })
   }
 
   otpResendCounter() {
@@ -64,8 +59,12 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
       .subscribe(response => {
         if (response.httpStatusCode === '200' && response.message === '000') {
           this.otpErrMsg = false;
-          this.router.navigate(['forgetPassword', 'resetPassword'], {queryParams: {'account': this.account,
-            'otp':ref_otp.control.value}})
+          this.router.navigate(['forgetPassword', 'resetPassword'], {
+            queryParams: {
+              'account': this.account,
+              'otp': ref_otp.control.value
+            }
+          })
         } else
           this.otpErrMsg = true;
       })

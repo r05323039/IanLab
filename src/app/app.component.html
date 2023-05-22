@@ -10,8 +10,8 @@
 
             <ul class="nav navbar-nav">
               <li routerLinkActive="active">
-                <a [routerLink]="['/login']" *ngIf="!status">會員登入</a>
-                <a  *ngIf="status" (click)="logout()" style="cursor: pointer" >會員登出</a>
+                <a [routerLink]="['/login']" *ngIf="!loginMode">會員登入</a>
+                <a  *ngIf="loginMode" (click)="logout()" style="cursor: pointer" >會員登出</a>
               </li>
               <li routerLinkActive="active">
                 <a [routerLink]="['center']">會員中心</a>
@@ -23,6 +23,5 @@
       </nav>
     </div>
     <router-outlet></router-outlet>
-<!--    <app-api-test></app-api-test>-->
   </div>
 </div>

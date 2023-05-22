@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {UserService} from "../../user-service";
+
 import {UserHttpService} from "../../user-http-service";
 import {ActivatedRoute, Router} from "@angular/router";
 
@@ -13,8 +13,7 @@ export class ResetPasswordComponent implements OnInit {
   npwd2: string
   pwErrMsg: boolean
 
-  constructor(private userService: UserService,
-              private userHttpService: UserHttpService,
+  constructor(private userHttpService: UserHttpService,
               private activatedRoute: ActivatedRoute,
               private router: Router) {
   }

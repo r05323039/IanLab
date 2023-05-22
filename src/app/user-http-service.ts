@@ -1,24 +1,22 @@
 import {Injectable} from "@angular/core";
-import {HttpClient, HttpHeaders, HttpParams, HttpResponse} from "@angular/common/http";
-import {map, Subject} from "rxjs";//pipe important!!!
+import {HttpClient, HttpParams} from "@angular/common/http";
+import {BehaviorSubject, exhaustMap, map, tap, throwError} from "rxjs";//pipe important!!!
 import {ResponseModel} from "./pojo/response.model";
 import {UserModel} from "./pojo/user.model";
-import {UserService} from "./user-service";
-import {Router} from "@angular/router";
+import {MessageModel} from "./pojo/message.model";
 
 @Injectable({providedIn: 'root'})
 export class UserHttpService {
+  userSubject: BehaviorSubject<UserModel> = new BehaviorSubject<UserModel>(null)
+  messageSubject: BehaviorSubject<MessageModel> = new BehaviorSubject<MessageModel>(null)
 
   URL: string = '/backend/user'
-  otpSubject: Subject<string> = new Subject<string>()
   token: string
 
-  constructor(private http: HttpClient,
-              private userService: UserService,
-              private router: Router) {
+  constructor(private http: HttpClient,) {
   }
 
-  //1.會員註冊
+  //會員註冊
   register(account: string,
            password: string,
            username: string,
@@ -43,17 +41,21 @@ export class UserHttpService {
     return this.http.post<ResponseModel>(this.URL + '/register', formData)
   }
 
-  //2.產生OTP
-  genOTP(account: string) {
+  //產生並獲取OTP
+  requestOTP(account: string) {
     return this.http.get<ResponseModel>(this.URL + '/otp/gen/' + account)
+      .pipe(
+        exhaustMap(response => {
+          if (response.message === '000') {
+            return this.http.get<ResponseModel>(this.URL + '/otp/get/' + account)
+          } else {
+            return throwError('Failed to generate OTP');
+          }
+        })
+      )
   }
 
-  //3.查詢OTP
-  getOTP(account: string) {
-    return this.http.get<ResponseModel>(this.URL + '/otp/get/' + account)
-  }
-
-  //4.忘記密碼
+  //忘記密碼
   forgetPw(account: string, otp: string, newPassword: string) {
     return this.http.post<ResponseModel>(this.URL + '/forgetpassword', null, {
       params: new HttpParams()
@@ -63,41 +65,74 @@ export class UserHttpService {
     })
   }
 
-  //5.登入
-  login(account: string, password: string) {
+  //獲得USER物件後...
+  private onGotUserModel(user: UserModel) {
+    const userObj: UserModel = {...user}//創建新的user供引用，並且可以添加屬性
+    this.userSubject.next(userObj)
+  }
+
+  //獲得Message物件後...
+  private onGotMessageModel(msg: MessageModel) {
+    const msgObj: MessageModel = {...msg}//創建新的user供引用，並且可以添加屬性
+    this.messageSubject.next(msgObj)
+  }
+
+  //登入
+  httpLogin(account: string, password: string) {
     return this.http.post<ResponseModel>(this.URL + '/login', null, {
       params: new HttpParams()
         .set('account', account)
         .set('password', password),
       observe: 'response' // 設置 observe 選項為 'response'，以獲取完整的 HTTP 響應
     })
+      .pipe(
+        tap(response => {
+          if (response.body.message === '000') {
+            //更新token
+            this.token = response.headers.get('x-token')
+            console.log('login-tap-token:\n' + this.token)
+            //儲存User物件
+            this.onGotUserModel(response.body.resEntity)
+          }
+        }),
+        //將response由observe改回body
+        map(response => response.body)
+      )
   }
 
-  //6.查詢會員
+  //查詢會員 (更新user物件)
   find(account: string) {
     return this.http.get<ResponseModel>(this.URL + '/find/' + account)
       .subscribe(response => {
         if (response.message === "000") {
-          //user
-          this.userService.user = response.resEntity
-          this.router.navigate(['center/data'])
+          this.onGotUserModel(response.resEntity)
         }
       })
   }
 
-  //7.查詢會員訊息
+  //查詢會員訊息
   findMsg(account: string) {
     return this.http.get<ResponseModel>(this.URL + '/find/msg/' + account)
+      .pipe(
+        tap(response => {
+          if (response.message === '000') {
+            //儲存一份在這個service中
+            this.onGotMessageModel(response.resEntity)
+          }
+          return response
+        })
+      )
+
   }
 
-  //8.刪除會員訊息
+  //刪除會員訊息
   deleteMessage(ids: number[]) {
     return this.http.delete<ResponseModel>(this.URL + '/delete/msg', {
       params: {msgIds: ids}
     })
   }
 
-  //9.重設密碼
+  //重設密碼
   resetPassword(account: string, opwd: string, npwd: string) {
     return this.http.post<ResponseModel>(this.URL + '/resetpassword', null, {
       params: new HttpParams()
@@ -107,7 +142,7 @@ export class UserHttpService {
     })
   }
 
-  //10.更新會員資料
+  //更新會員資料
   update(user: UserModel) {
     const formData: FormData = new FormData();
     formData.append('account', user.account);
@@ -123,17 +158,29 @@ export class UserHttpService {
     if (user.image) {
       formData.append('image', user.image);
     }
+
     return this.http.post<ResponseModel>(this.URL + '/update', formData)
+      .pipe(
+        tap(response => {
+          if (response.message === "000") {
+            //處理返回的userEntity
+            this.onGotUserModel(response.resEntity)
+            return response
+          } else {
+            return throwError("something Wrong")
+          }
+        })
+      )
   }
 
 
-//11.取得會員上傳圖片
+//取得會員上傳圖片
   getImage(account: string, image: string) {
     const url = this.URL + '/image/' + account + '/' + image
     return this.http.get(url, {responseType: 'blob'})
   }
 
-//12.驗證OTP
+//驗證OTP
   verifyOTP(account: string, otp: string) {
     return this.http.post<ResponseModel>(this.URL + '/otp/verify', null, {
       params: new HttpParams()
@@ -145,6 +192,13 @@ export class UserHttpService {
 
   existAccount(account: string) {
     return this.http.get<ResponseModel>(this.URL + '/' + account)
+  }
+
+  genMse(account: string) {
+    return this.http.post<ResponseModel>(this.URL + '/msg/add', null, {
+      params: new HttpParams()
+        .set('account', account)
+    })
   }
 }
 

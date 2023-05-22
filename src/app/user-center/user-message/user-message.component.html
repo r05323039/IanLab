@@ -22,6 +22,7 @@
   <button class="btn btn-default" (click)="toNext()">>></button>
 </div>
 <button class="btn btn-danger" (click)="onDelete()">刪除訊息</button>
+<button class="btn btn-success" (click)="getTestData()">獲得測試數據</button>
 <ng-container *ngIf="inputMsg">
   <app-message-dialog [msg]="inputMsg"
                       (confirmClicked)="inputMsg = null"
